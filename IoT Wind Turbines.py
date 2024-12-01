@@ -125,20 +125,57 @@ def optimize_wind_turbine(wind_speed, wind_angle, temperature, current, time_per
     }
 
 # Example usage
+import pandas as pd
+import matplotlib.pyplot as plt
+
+# Assuming optimize_wind_turbine is already defined as before
+
 if __name__ == "__main__":
-    wind_speed = 60  # m/s
-    wind_angle = 0  # degrees
-    temperature = 600.0  # Kelvin
-    current = 5.0  # Amperes
-    time_period = 1.0  # Hours
+    # Read the dataset
+    df = pd.read_excel('db.xlsx')
+    
+    # Convert 'Timestamp' to datetime if it's in time format, or use it as a string
+    # This assumes that the Timestamp is in HH:MM:SS format, adjust as necessary
+    df['Timestamp'] = pd.to_datetime(df['Timestamp'], format='%H:%M:%S').dt.strftime('%H:%M:%S')
+    
+    # Initialize lists to store the results
+    energy_delivered = []
+    timestamps = []
+
+    # Iterate over each row in the dataframe
+    for index, row in df.iterrows():
+        wind_speed = row['wind_speed']
+        wind_angle = row['wind_angle']
+        temperature = row['temperature']
+        current = 5.0  # You can modify this as needed
+        time_period = 1.0  # Hours
 
         # Optimization
-    results = optimize_wind_turbine(wind_speed, (wind_angle), temperature, current, time_period)
+        results = optimize_wind_turbine(wind_speed, wind_angle, temperature, current, time_period)
+        
+        # Store the energy delivered and timestamp
+        energy_delivered.append(results['Energy Delivered (kWh)'])
+        timestamps.append(row['Timestamp'])
 
-        # Print results
-    for key, value in results.items():
-            
-        print(f"{key}: {value}")
-    
+    # Create a DataFrame for the results
+    results_df = pd.DataFrame({
+        'Timestamp': timestamps,
+        'Energy Delivered (kWh)': energy_delivered
+    })
+
+    # Plot the energy delivered as a line chart
+    plt.figure(figsize=(10, 6))
+    plt.plot(results_df['Timestamp'], results_df['Energy Delivered (kWh)'], marker='o', color='b', label='Energy Delivered (kWh)')
+    plt.xlabel('Timestamp')
+    plt.ylabel('Energy Delivered (kWh)')
+    plt.title('Energy Delivered over Time')
+    plt.xticks(rotation=45)
+    plt.grid(True)
+    plt.legend()
+    plt.tight_layout()
+
+    # Show the plot
+    plt.show()
+
 
         
